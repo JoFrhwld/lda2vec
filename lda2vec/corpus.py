@@ -94,14 +94,14 @@ class Corpus():
 
     def _loose_keys_ordered(self):
         """ Get the loose keys in order of decreasing frequency"""
-        loose_counts = sorted(self.counts_loose.items(), key=lambda x: x[1],
+        loose_counts = sorted(list(self.counts_loose.items()), key=lambda x: x[1],
                               reverse=True)
         keys = np.array(loose_counts)[:, 0]
         counts = np.array(loose_counts)[:, 1]
         order = np.argsort(counts)[::-1].astype('int32')
         keys, counts = keys[order], counts[order]
         # Add in the specials as a prefix to the other keys
-        specials = np.sort(self.specials.values())
+        specials = np.sort(list(self.specials.values()))
         keys = np.concatenate((specials, keys))
         empty = np.zeros(len(specials), dtype='int32')
         counts = np.concatenate((empty, counts))
@@ -157,11 +157,11 @@ class Corpus():
         self.loose_to_compact = {l: c for l, c in
                                  zip(self.keys_loose, self.keys_compact)}
         self.compact_to_loose = {c: l for l, c in
-                                 self.loose_to_compact.items()}
+                                 list(self.loose_to_compact.items())}
         self.specials_to_compact = {s: self.loose_to_compact[i]
-                                    for s, i in self.specials.items()}
+                                    for s, i in list(self.specials.items())}
         self.compact_to_special = {c: s for c, s in
-                                   self.specials_to_compact.items()}
+                                   list(self.specials_to_compact.items())}
         self._finalized = True
 
     @property
@@ -472,7 +472,7 @@ class Corpus():
         words = []
         if max_compact_index is None:
             max_compact_index = self.keys_compact.shape[0]
-        index_to_special = {i: s for s, i in self.specials.items()}
+        index_to_special = {i: s for s, i in list(self.specials.items())}
         for compact_index in range(max_compact_index):
             loose_index = self.compact_to_loose.get(compact_index, oov)
             special = index_to_special.get(loose_index, oov_token)
@@ -542,9 +542,9 @@ class Corpus():
         if array is not None:
             data = array
             n_words = data.shape[0]
-        keys_raw = model.vocab.keys()
+        keys_raw = list(model.vocab.keys())
         keys = [s.encode('ascii', 'ignore') for s in keys_raw]
-        lens = [len(s) for s in model.vocab.keys()]
+        lens = [len(s) for s in list(model.vocab.keys())]
         choices = np.array(keys, dtype='S')
         lengths = np.array(lens, dtype='int32')
         s, f = 0, 0
@@ -568,7 +568,7 @@ class Corpus():
                     break
             if vector is None:
                 try:
-                    word = unicode(word)
+                    word = str(word)
                     idx = lengths >= len(word) - 3
                     idx &= lengths <= len(word) + 3
                     sel = choices[idx]
@@ -576,7 +576,7 @@ class Corpus():
                     choice = np.array(keys_raw)[idx][np.argmin(d)]
                     # choice = difflib.get_close_matches(word, choices)[0]
                     vector = model[choice]
-                    print compact, word, ' --> ', choice
+                    print(compact, word, ' --> ', choice)
                 except IndexError:
                     pass
             if vector is None:
@@ -674,13 +674,13 @@ class Corpus():
         array([1, 1])
         """
         tokens = pd.DataFrame(dict(word_index=word_compact)).reset_index()
-        for name, index in indices.items():
+        for name, index in list(indices.items()):
             tokens[name] = index
         a, b = tokens.copy(), tokens.copy()
         mask = lambda x: np.prod([x[k + '_x'] == x[k + '_y']
-                                  for k in indices.keys()], axis=0)
+                                  for k in list(indices.keys())], axis=0)
         group_keys = ['word_index_x', 'word_index_y', ]
-        group_keys += [k + '_x' for k in indices.keys()]
+        group_keys += [k + '_x' for k in list(indices.keys())]
         total = []
         a['frame'] = a['index'].copy()
         for frame in range(-window_size, window_size + 1):
@@ -698,7 +698,7 @@ class Corpus():
                     .groupby(group_keys)['frame']
                     .sum()
                     .reset_index()
-                    .rename(columns={k + '_x': k for k in indices.keys()})
+                    .rename(columns={k + '_x': k for k in list(indices.keys())})
                     .rename(columns=dict(frame='counts')))
         return counts
 

@@ -1,10 +1,10 @@
-import dirichlet_likelihood
-import embed_mixture
-import tracking
-import preprocess
-import corpus
-import topics
-import negative_sampling
+from . import dirichlet_likelihood
+from . import embed_mixture
+from . import tracking
+from . import preprocess
+from . import corpus
+from . import topics
+from . import negative_sampling
 
 dirichlet_likelihood = dirichlet_likelihood.dirichlet_likelihood
 EmbedMixture = embed_mixture.EmbedMixture
